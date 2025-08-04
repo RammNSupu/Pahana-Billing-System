@@ -160,9 +160,34 @@
       right: -5px;
       font-size: 12px;
     }
+    
+    .sidebar .nav-link:hover {
+  background-color: #3e55d4;
+  color: white !important;
+  transition: 0.3s;
+}
+
+.quick-action .btn:hover {
+  filter: brightness(1.1);
+  transform: scale(1.03);
+  transition: 0.3s ease;
+}
+
   </style>
 </head>
 <body>
+
+    <%
+    String successMsg = request.getParameter("success");
+    if (successMsg != null && !successMsg.isEmpty()) {
+%>
+    <div class="alert alert-success alert-dismissible fade show" role="alert" style="margin: 100px 30px 0 270px;">
+        <%= successMsg %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<%
+    }
+%>
 
   <!-- Topbar -->
   <div class="topbar">
@@ -192,12 +217,13 @@
       <div class="quick-stats-btn">Quick Stats<br><small>Today's Overview</small></div>
     </div>
     <nav class="nav flex-column">
-      <a class="nav-link active" href="#"><i class="bi bi-house-door-fill"></i> Dashboard</a>
-      <a class="nav-link" href="#"><i class="bi bi-people-fill"></i> Customers</a>
-      <a class="nav-link" href="#"><i class="bi bi-box-fill"></i> Items</a>
-      <a class="nav-link" href="#"><i class="bi bi-receipt"></i> Billing</a>
-      <a class="nav-link" href="#"><i class="bi bi-question-circle-fill"></i> Help</a>
-    </nav>
+  <a class="nav-link active" href="dashboard.jsp"><i class="bi bi-house-door-fill"></i> Dashboard</a>
+  <a class="nav-link" href="customers.jsp"><i class="bi bi-people-fill"></i> Customers</a>
+  <a class="nav-link" href="items.jsp"><i class="bi bi-box-fill"></i> Items</a>
+  <a class="nav-link" href="billing.jsp"><i class="bi bi-receipt"></i> Billing</a>
+  <a class="nav-link" href="help.jsp"><i class="bi bi-question-circle-fill"></i> Help</a>
+</nav>
+
   </div>
 
   <!-- Main Content -->
@@ -262,20 +288,41 @@
     <div class="card-shadow mt-4">
       <h6 class="mb-3">Quick Actions</h6>
       <div class="row g-3 quick-action">
-        <div class="col-md-4">
-          <button class="btn-customer"><i class="bi bi-person-plus me-2"></i>Add New Customer</button>
-        </div>
-        <div class="col-md-4">
-          <button class="btn-item"><i class="bi bi-box-seam me-2"></i>Add New Item</button>
-        </div>
-        <div class="col-md-4">
-          <button class="btn-bill"><i class="bi bi-file-earmark-plus me-2"></i>Generate Bill</button>
-        </div>
-      </div>
+  <div class="col-md-4">
+    <a href="add_customer.jsp" class="btn btn-customer d-block text-center">
+      <i class="bi bi-person-plus me-2"></i>Add New Customer
+    </a>
+  </div>
+  <div class="col-md-4">
+    <a href="addItem.jsp" class="btn btn-item d-block text-center">
+      <i class="bi bi-box-seam me-2"></i>Add New Item
+    </a>
+  </div>
+  <div class="col-md-4">
+    <a href="generateBill.jsp" class="btn btn-bill d-block text-center">
+      <i class="bi bi-file-earmark-plus me-2"></i>Generate Bill
+    </a>
+  </div>
+</div>
+
     </div>
   </div>
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  
+  
+  
+  <script>
+  // Auto-dismiss success alert after 3 seconds
+  setTimeout(function () {
+    var alert = document.querySelector('.alert-success');
+    if (alert) {
+      alert.style.display = 'none';
+    }
+  }, 5000); // 3000 ms = 3 seconds
+</script>
+
+  
 </body>
 </html>
