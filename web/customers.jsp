@@ -1,11 +1,26 @@
 <%@page import="java.sql.*, java.util.*" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+
 <%
-    // Fetch customer list from DB
+    String keyword = request.getParameter("search") != null ? request.getParameter("search").trim() : "";
+
     List<Map<String, String>> customers = new ArrayList<>();
     try (Connection conn = com.pahana.util.DBUtil.getConnection()) {
         String query = "SELECT * FROM customers";
+        if (!keyword.isEmpty()) {
+            query += " WHERE account_number LIKE ? OR name LIKE ? OR phone LIKE ? OR email LIKE ?";
+        }
+
         PreparedStatement stmt = conn.prepareStatement(query);
+
+        if (!keyword.isEmpty()) {
+            String likeKeyword = "%" + keyword + "%";
+            stmt.setString(1, likeKeyword);
+            stmt.setString(2, likeKeyword);
+            stmt.setString(3, likeKeyword);
+            stmt.setString(4, likeKeyword);
+        }
+
         ResultSet rs = stmt.executeQuery();
         while (rs.next()) {
             Map<String, String> customer = new HashMap<>();
@@ -20,6 +35,7 @@
         e.printStackTrace();
     }
 %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -156,7 +172,6 @@
     .input-group input {
       height: 42px;
     }
-
   </style>
 </head>
 <body>
@@ -208,10 +223,11 @@
     </div>
 
     <!-- Search Bar -->
-    <div class="input-group mt-4 mb-3">
+    <form method="get" class="input-group mt-4 mb-3">
       <span class="input-group-text"><i class="bi bi-search"></i></span>
-      <input type="text" class="form-control" placeholder="Search customer">
-    </div>
+      <input type="text" class="form-control" placeholder="Search customer by name, phone or email" name="search" value="<%= keyword %>">
+      <button type="submit" class="btn btn-outline-primary">Search</button>
+    </form>
 
     <!-- Customer Table -->
     <div class="card-shadow">
@@ -239,7 +255,7 @@
               <td><%= cust.get("phone") %></td>
               <td><%= cust.get("email") %></td>
               <td>
-                <a href="#" class="btn btn-success btn-sm">Edit</a>
+                <a href="edit_customer.jsp?acc=<%= cust.get("account_number") %>" class="btn btn-sm btn-warning">Edit</a>
                 <a href="deleteCustomer?acc=<%= cust.get("account_number") %>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Remove</a>
               </td>
             </tr>
