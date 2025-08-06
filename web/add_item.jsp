@@ -62,7 +62,7 @@
 <div class="main-content">
   <div class="form-card">
     <h4>Add New Item</h4>
-    <form action="addItemServlet" method="post">
+    <form action="addItem" method="post">
       <div class="mb-3">
         <label class="form-label required">Item Code</label>
         <input type="text" class="form-control" name="item_code" required>
