@@ -1,9 +1,29 @@
 <%@ page import="java.sql.*, java.util.*" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+
 <%
+    // Get search keyword from request
+    String keyword = request.getParameter("search") != null ? request.getParameter("search").trim() : "";
+
     List<Map<String, String>> items = new ArrayList<>();
     try (Connection conn = com.pahana.util.DBUtil.getConnection()) {
-        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM items");
+        String sql = "SELECT * FROM items";
+        
+        // If keyword is not empty, add WHERE conditions
+        if (!keyword.isEmpty()) {
+            sql += " WHERE item_code LIKE ? OR item_name LIKE ? OR category LIKE ? OR description LIKE ?";
+        }
+
+        PreparedStatement stmt = conn.prepareStatement(sql);
+
+        if (!keyword.isEmpty()) {
+            String like = "%" + keyword + "%";
+            stmt.setString(1, like);
+            stmt.setString(2, like);
+            stmt.setString(3, like);
+            stmt.setString(4, like);
+        }
+
         ResultSet rs = stmt.executeQuery();
         while (rs.next()) {
             Map<String, String> item = new HashMap<>();
@@ -36,7 +56,6 @@
       font-family: 'Segoe UI', sans-serif;
       background-color: rgba(62, 85, 212, 0.07);
     }
-
     .sidebar {
       position: fixed;
       top: 70px;
@@ -47,7 +66,6 @@
       padding: 20px 10px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
-
     .quick-stats-btn {
       background: linear-gradient(to right, #A626C6, #F74040);
       color: white;
@@ -58,7 +76,6 @@
       font-weight: 600;
       margin-bottom: 25px;
     }
-
     .sidebar .nav-link {
       color: black;
       font-weight: 500;
@@ -69,12 +86,10 @@
       gap: 10px;
       border-radius: 10px;
     }
-
     .sidebar .nav-link.active {
       background-color: #3e55d4;
       color: white !important;
     }
-
     .topbar {
       position: fixed;
       top: 0;
@@ -89,41 +104,34 @@
       border-bottom: 1px solid #eee;
       z-index: 1000;
     }
-
     .brand-area {
       display: flex;
       align-items: center;
       gap: 15px;
     }
-
     .brand-area img {
       width: 40px;
     }
-
     .brand-text h5 {
       margin: 0;
       font-weight: bold;
       color: #3e55d4;
     }
-
     .brand-text small {
       font-size: 12px;
       color: #666;
     }
-
     .user-info {
       display: flex;
       align-items: center;
       gap: 15px;
     }
-
     .main-content {
       margin-left: 240px;
       margin-top: 70px;
       padding: 30px;
       color: black;
     }
-
     .dashboard-header {
       background-color: white;
       padding: 20px;
@@ -132,7 +140,6 @@
       margin-bottom: 30px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-
     .card-shadow {
       background-color: white;
       border-radius: 12px;
@@ -140,18 +147,15 @@
       padding: 20px;
       color: black;
     }
-
     .btn-success, .btn-danger {
       font-size: 0.75rem;
       padding: 4px 12px;
     }
-
     .sidebar .nav-link:hover {
       background-color: #3e55d4;
       color: white !important;
       transition: 0.3s;
     }
-
     .input-group input {
       height: 42px;
     }
@@ -205,9 +209,10 @@
       <a href="add_item.jsp" class="btn btn-primary">+ Add Item</a>
     </div>
 
+    <!-- Search Form -->
     <form method="get" class="input-group mt-4 mb-3">
       <span class="input-group-text"><i class="bi bi-search"></i></span>
-      <input type="text" class="form-control" placeholder="Search item" name="search">
+      <input type="text" class="form-control" placeholder="Search item by code, name, category, or description" name="search" value="<%= keyword %>">
       <button type="submit" class="btn btn-outline-primary">Search</button>
     </form>
 

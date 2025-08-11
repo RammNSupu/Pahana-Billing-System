@@ -76,7 +76,7 @@
     }
 
     .brand-area img {
-      width: 40px;
+      width: 40px; 
     }
 
     .brand-text h5 {
@@ -120,7 +120,7 @@
       font-weight: 600;
     }
 
-    .icon-blue { background-color: #3e55d4; }
+    .icon-blue { background-color: rgba(62, 85, 212, 0.80); }
     .icon-pink { background-color: #c832c4; }
     .icon-red { background-color: #dc3545; }
     .icon-green { background-color: #28a745; }
