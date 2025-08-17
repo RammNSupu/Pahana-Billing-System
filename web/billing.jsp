@@ -41,6 +41,11 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>
 
   <style>
+    /* Force billing table text to show properly */
+    #itemsTable td, #itemsTable th {
+      color: #000 !important;
+    }
+
     body { margin:0; font-family:'Segoe UI',sans-serif; background-color:rgba(62,85,212,.07); }
     .sidebar{position:fixed; top:70px; left:0; height:calc(100vh - 70px); width:240px; background:#fff; padding:20px 10px; box-shadow:0 0 10px rgba(0,0,0,.1);}
     .quick-stats-btn{background:linear-gradient(to right,#A626C6,#F74040); color:#fff; border-radius:20px; padding:15px 20px; width:100%; text-align:center; font-weight:600; margin-bottom:25px;}
@@ -58,16 +63,6 @@
   </style>
 </head>
 <body>
-
-<%
-  String successMsg = request.getParameter("success");
-  if (successMsg != null && !successMsg.isEmpty()) {
-%>
-  <div class="alert alert-success alert-dismissible fade show" role="alert" style="margin: 100px 30px 0 270px;">
-      <%= successMsg %>
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  </div>
-<% } %>
 
 <!-- Topbar -->
 <div class="topbar">
@@ -116,7 +111,6 @@
   </div>
 
   <div class="card-shadow">
-    <!-- STEP 1: Post to generateBill.jsp -->
     <form id="billForm" action="generateBill.jsp" method="post">
       <div class="row mb-3">
         <div class="col-md-4">
@@ -158,26 +152,23 @@
         </div>
       </div>
 
-      <table class="table table-bordered mt-4" id="itemsTable">
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th>Qty</th>
-            <th>Unit Price</th>
-            <th>Total</th>
-            <th>Action</th>
-          </tr>
+      <table id="itemsTable" class="table table-bordered mt-4">
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th>Qty</th>
+      <th>Unit Price</th>
+      <th>Total</th>
+      <th>Action</th>
+    </tr>
         </thead>
         <tbody id="itemsBody"></tbody>
       </table>
 
-      <!-- Grand total (and hidden) -->
       <div class="d-flex justify-content-end mt-3">
         <h5>Total: Rs. <span id="grandTotal">0.00</span></h5>
         <input type="hidden" name="totalAmount" id="totalAmount" value="0.00">
       </div>
-
-      <!-- These hidden inputs will be appended per-row: item_id[], item_name[], quantity[], unit_price[], total_price[] -->
 
       <div class="mt-4">
         <button type="submit" class="btn btn-primary">Generate Bill</button>
@@ -212,50 +203,55 @@
     if (!Number.isFinite(qty) || qty <= 0) { alert('Invalid quantity.'); return; }
     if (!Number.isFinite(unitPrice) || unitPrice <= 0) { alert('Invalid unit price.'); return; }
 
-    const rowTotal = qty * unitPrice;
+    const rowTotal = +(qty * unitPrice).toFixed(2);
 
-    // Visible row + hidden inputs (array names!)
-     const tr = document.createElement('tr');
-tr.innerHTML = `
-  <td>${itemName}</td>
-  <td>${qty}</td>
-  <td>${unitPrice.toFixed(2)}</td>
-  <td>${rowTotal.toFixed(2)}</td>
-  <td><button type="button" class="btn btn-danger btn-sm">Remove</button></td>
-`;
+    // ✅ Proper row build
+    const tr = document.createElement('tr');
+    tr.dataset.total = rowTotal;
+    tr.innerHTML = `
+      <td class="text-dark">
+        ${itemName}
+        <input type="hidden" name="item_id[]" value="${itemId}">
+        <input type="hidden" name="item_name[]" value="${itemName}">
+        <input type="hidden" name="quantity[]" value="${qty}">
+        <input type="hidden" name="unit_price[]" value="${unitPrice.toFixed(2)}">
+        <input type="hidden" name="total_price[]" value="${rowTotal.toFixed(2)}">
+      </td>
+      <td class="text-dark">${qty}</td>
+      <td class="text-dark">${unitPrice.toFixed(2)}</td>
+      <td class="text-dark row-total">${rowTotal.toFixed(2)}</td>
+      <td><button type="button" class="btn btn-danger btn-sm remove-btn">Remove</button></td>
+    `;
+    itemsBody.appendChild(tr);
 
-// Hidden inputs
-tr.innerHTML += `
-  <input type="hidden" name="item_id" value="${itemId}">
-  <input type="hidden" name="item_name" value="${itemName}">
-  <input type="hidden" name="quantity" value="${qty}">
-  <input type="hidden" name="unit_price" value="${unitPrice.toFixed(2)}">
-  <input type="hidden" name="total_price" value="${rowTotal.toFixed(2)}">
-`;
-
+    // Remove button handler
+    tr.querySelector('.remove-btn').addEventListener('click', function () {
+      const rTotal = parseFloat(tr.dataset.total || tr.querySelector('.row-total').textContent) || 0;
+      tr.remove();
+      runningTotal -= rTotal;
+      if (runningTotal < 0) runningTotal = 0;
+      grandTotalEl.textContent = runningTotal.toFixed(2);
+      totalAmountHidden.value = runningTotal.toFixed(2);
+    });
 
     // update totals
     runningTotal += rowTotal;
     grandTotalEl.textContent = runningTotal.toFixed(2);
     totalAmountHidden.value = runningTotal.toFixed(2);
 
-    // reset qty to 1
+    // reset inputs
     document.getElementById('quantity').value = 1;
+    itemSelect.value = '';
+    unitPriceInput.value = '';
   });
 
   // prevent submit without items
   document.getElementById('billForm').addEventListener('submit', function(e){
-    if (!itemsBody.querySelector('input[name="item_id"]')) {
+    if (!itemsBody.querySelector('input[name="item_id[]"]')) {
       e.preventDefault();
       alert('Please add at least one item to the bill.');
     }
   });
-
-  // Success alert auto-hide
-  setTimeout(()=> {
-    const a = document.querySelector('.alert-success');
-    if (a) a.style.display = 'none';
-  }, 5000);
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

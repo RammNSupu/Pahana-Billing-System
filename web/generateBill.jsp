@@ -18,11 +18,11 @@
   String customerId = request.getParameter("customer_id");
   String totalAmount = request.getParameter("totalAmount");
 
-  String[] itemIds = request.getParameterValues("item_id");
-  String[] itemNames = request.getParameterValues("item_name");
-  String[] quantities = request.getParameterValues("quantity");
-  String[] unitPrices = request.getParameterValues("unit_price");
-  String[] totals = request.getParameterValues("total_price");
+  String[] itemIds = request.getParameterValues("item_id[]");
+  String[] itemNames = request.getParameterValues("item_name[]");
+  String[] quantities = request.getParameterValues("quantity[]");
+  String[] unitPrices = request.getParameterValues("unit_price[]");
+  String[] totals = request.getParameterValues("total_price[]");
 
   if (itemIds == null) { itemIds = new String[0]; }
 %>
@@ -66,17 +66,17 @@
     <h5>Total: Rs. <%= String.format(java.util.Locale.US,"%.2f", gTotal) %></h5>
   </div>
 
-  <!-- Save Bill form: carry everything forward -->
+  <!-- Save Bill form -->
   <form action="saveBill" method="post" class="mt-4">
     <input type="hidden" name="bill_date" value="<%= billDate %>">
     <input type="hidden" name="customer_id" value="<%= customerId %>">
     <input type="hidden" name="totalAmount" value="<%= String.format(java.util.Locale.US,"%.2f", gTotal) %>">
 
     <% for (int i=0; i<itemIds.length; i++) { %>
-      <input type="hidden" name="item_id" value="<%= itemIds[i] %>">
-      <input type="hidden" name="quantity" value="<%= quantities[i] %>">
-      <input type="hidden" name="unit_price" value="<%= unitPrices[i] %>">
-      <input type="hidden" name="total_price" value="<%= totals[i] %>">
+      <input type="hidden" name="item_id[]" value="<%= itemIds[i] %>">
+      <input type="hidden" name="quantity[]" value="<%= quantities[i] %>">
+      <input type="hidden" name="unit_price[]" value="<%= unitPrices[i] %>">
+      <input type="hidden" name="total_price[]" value="<%= totals[i] %>">
     <% } %>
 
     <button type="submit" class="btn btn-success">Save Bill</button>

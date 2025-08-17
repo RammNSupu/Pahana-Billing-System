@@ -43,75 +43,47 @@ public class SaveBillServlet extends HttpServlet {
         try (Connection conn = DBUtil.getConnection()) {
             conn.setAutoCommit(false);
 
-            // Calculate subtotal
             BigDecimal subtotal = BigDecimal.ZERO;
             if (totalPrices != null) {
                 for (String tp : totalPrices) {
                     subtotal = subtotal.add(safeBigDecimal(tp));
                 }
             }
+            BigDecimal total = subtotal;
 
-            BigDecimal discount = BigDecimal.ZERO;
-            BigDecimal total = subtotal.subtract(discount);
-
-            // Insert into bills
-            String sqlBill = "INSERT INTO bills (customer_id, bill_date, subtotal, discount, total) VALUES (?, ?, ?, ?, ?)";
-            PreparedStatement psBill = conn.prepareStatement(sqlBill, Statement.RETURN_GENERATED_KEYS);
-
-            Integer custId = safeParseInt(customerIdStr);
-            if (custId == null) {
-                psBill.setNull(1, Types.INTEGER);
-            } else {
-                psBill.setInt(1, custId);
-            }
-
-            Timestamp billTimestamp = null;
-            if (billDateStr != null && !billDateStr.trim().isEmpty()) {
-                // Handle both "2025-08-17T12:36" and "2025-08-17 12:36:00"
-                if (billDateStr.contains("T")) {
-                    billDateStr = billDateStr.replace("T", " ") + ":00";
+            int billId = -1;
+            String insertBill = "INSERT INTO bills (customer_id, bill_date, subtotal, total) VALUES (?, ?, ?, ?)";
+            try (PreparedStatement ps = conn.prepareStatement(insertBill, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setInt(1, safeParseInt(customerIdStr));
+                ps.setString(2, billDateStr);
+                ps.setBigDecimal(3, subtotal);
+                ps.setBigDecimal(4, total);
+                ps.executeUpdate();
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        billId = rs.getInt(1);
+                    }
                 }
-                billTimestamp = Timestamp.valueOf(billDateStr);
             }
-            psBill.setTimestamp(2, billTimestamp);
 
-            psBill.setBigDecimal(3, subtotal);
-            psBill.setBigDecimal(4, discount);
-            psBill.setBigDecimal(5, total);
-            psBill.executeUpdate();
-
-            // Get generated bill_id
-            ResultSet rs = psBill.getGeneratedKeys();
-            int billId = 0;
-            if (rs.next()) billId = rs.getInt(1);
-
-            // Insert items
-            String sqlItem = "INSERT INTO bill_items (bill_id, item_id, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?)";
-            PreparedStatement psItem = conn.prepareStatement(sqlItem);
-
-            for (int i = 0; i < itemIds.length; i++) {
-                Integer itemId = safeParseInt(itemIds[i]);
-                Integer qty = safeParseInt(quantities[i]);
-                BigDecimal unitPrice = safeBigDecimal(unitPrices[i]);
-                BigDecimal totalPrice = safeBigDecimal(totalPrices[i]);
-
-                if (itemId == null || qty == null) continue;
-
-                psItem.setInt(1, billId);
-                psItem.setInt(2, itemId);
-                psItem.setInt(3, qty);
-                psItem.setBigDecimal(4, unitPrice);
-                psItem.setBigDecimal(5, totalPrice);
-                psItem.executeUpdate();
+            String insertItem = "INSERT INTO bill_items (bill_id, item_id, quantity, unit_price, total_price) VALUES (?,?,?,?,?)";
+            try (PreparedStatement ps = conn.prepareStatement(insertItem)) {
+                for (int i = 0; i < itemIds.length; i++) {
+                    ps.setInt(1, billId);
+                    ps.setInt(2, safeParseInt(itemIds[i]));
+                    ps.setInt(3, safeParseInt(quantities[i]));
+                    ps.setBigDecimal(4, safeBigDecimal(unitPrices[i]));
+                    ps.setBigDecimal(5, safeBigDecimal(totalPrices[i]));
+                    ps.addBatch();
+                }
+                ps.executeBatch();
             }
 
             conn.commit();
-            response.getWriter().write("Bill saved successfully");
-
+            response.sendRedirect("billing.jsp?success=Bill saved successfully");
         } catch (Exception e) {
             e.printStackTrace();
-            response.setStatus(500);
-            response.getWriter().write("Error saving bill: " + e.getMessage());
+            response.sendError(500, "Error saving bill: " + e.getMessage());
         }
     }
 }
