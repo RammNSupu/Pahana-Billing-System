@@ -7,8 +7,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,32 +22,42 @@ public class LoginServlet extends HttpServlet {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
 
-        // Debug message to console
-        System.out.println("LoginServlet triggered with: " + username + ", " + password);
-
-
+        boolean usernameError = false;
+        boolean passwordError = false;
 
         try (Connection conn = DBUtil.getConnection()) {
-            String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, username);
-            stmt.setString(2, password);
 
-            ResultSet rs = stmt.executeQuery();
+            // 1. Check if username exists
+            String checkUser = "SELECT password FROM users WHERE username = ?";
+            PreparedStatement stmtUser = conn.prepareStatement(checkUser);
+            stmtUser.setString(1, username);
+            ResultSet rsUser = stmtUser.executeQuery();
 
-            if (rs.next()) {
-                // Login successful, forward to dashboard
+            if (!rsUser.next()) {
+                // username not found
+                usernameError = true;
+            } else {
+                // username exists, now check password
+                String correctPassword = rsUser.getString("password");
+                if (!correctPassword.equals(password)) {
+                    passwordError = true;
+                }
+            }
+
+            if (!usernameError && !passwordError) {
+                // Login success
                 RequestDispatcher dispatcher = request.getRequestDispatcher("dashboard.jsp");
                 dispatcher.forward(request, response);
             } else {
-                // Login failed, return to  with error
-                request.setAttribute("error", "Invalid username or password!");
+                // Pass error flags back to JSP
+                request.setAttribute("usernameError", usernameError);
+                request.setAttribute("passwordError", passwordError);
+                request.setAttribute("usernameValue", username);
                 RequestDispatcher dispatcher = request.getRequestDispatcher("login.jsp");
                 dispatcher.forward(request, response);
             }
 
         } catch (SQLException e) {
-            // Show a meaningful error message in development
             e.printStackTrace();
             throw new ServletException("Database connection or query failed!", e);
         }
