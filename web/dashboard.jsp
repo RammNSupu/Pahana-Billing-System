@@ -1,3 +1,11 @@
+<%@ page import="java.sql.Connection,java.sql.PreparedStatement,java.sql.ResultSet" %>
+<%@ page import="com.pahana.util.DBUtil" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -233,7 +241,10 @@
         <h4>Dashboard</h4>
         <p class="text-muted mb-0">Welcome to the Pahana Edu Management System</p>
       </div>
-      <div><i class="bi bi-calendar-event"></i> 17/07/2025</div>
+      <div>
+    <i class="bi bi-calendar-event"></i> 
+    <%= new java.text.SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date()) %>
+  </div>
     </div>
 
     <div class="row g-4">
@@ -272,8 +283,38 @@
               <tr><th>Name</th><th>Email</th><th>Date</th></tr>
             </thead>
             <tbody>
-              <tr><td colspan="3" class="text-center">No data available</td></tr>
-            </tbody>
+<%
+    try (Connection conn = com.pahana.util.DBUtil.getConnection()) {
+        String sql = "SELECT name, email, created_at FROM customers ORDER BY created_at DESC LIMIT 6";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+
+        boolean hasData = false;
+        while (rs.next()) {
+            hasData = true;
+%>
+            <tr>
+                <td><%= rs.getString("name") %></td>
+                <td><%= rs.getString("email") %></td>
+                <td><%= new java.text.SimpleDateFormat("dd/MM/yyyy")
+                        .format(rs.getTimestamp("created_at")) %></td>
+            </tr>
+<%
+        }
+        if (!hasData) {
+%>
+            <tr><td colspan="3" class="text-center">No recent customers</td></tr>
+<%
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+%>
+        <tr><td colspan="3" class="text-danger text-center">Error loading customers</td></tr>
+<%
+    }
+%>
+</tbody>
+
           </table>
         </div>
       </div>
