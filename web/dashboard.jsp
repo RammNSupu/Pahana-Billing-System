@@ -188,14 +188,14 @@
     <%
     String successMsg = request.getParameter("success");
     if (successMsg != null && !successMsg.isEmpty()) {
-%>
-    <div class="alert alert-success alert-dismissible fade show" role="alert" style="margin: 100px 30px 0 270px;">
-        <%= successMsg %>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-<%
-    }
-%>
+    %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert" style="margin: 100px 30px 0 270px;">
+            <%= successMsg %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <%
+        }
+    %>
 
   <!-- Topbar -->
   <div class="topbar">
@@ -215,7 +215,8 @@
         <i class="bi bi-bell-fill text-danger fs-5"></i>
         <span class="badge bg-danger rounded-pill badge-notify">3</span>
       </div>
-      <button class="btn btn-primary btn-sm">Logout</button>
+      <a href="${pageContext.request.contextPath}/logout" class="btn btn-primary btn-sm">Logout</a>
+
     </div>
   </div>
 

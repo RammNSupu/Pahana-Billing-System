@@ -69,7 +69,7 @@
       <i class="bi bi-bell-fill text-danger fs-5"></i>
       <span class="badge bg-danger rounded-pill" style="position:absolute; top:0; right:-5px; font-size:12px;">3</span>
     </div>
-    <button class="btn btn-primary btn-sm">Logout</button>
+    <a href="${pageContext.request.contextPath}/logout" class="btn btn-primary btn-sm">Logout</a>
   </div>
 </div>
 

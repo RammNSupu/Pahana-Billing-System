@@ -13,7 +13,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #4d65e6;
+            background-color: rgba(62, 85, 212, 0.07);
             font-family: 'Segoe UI', sans-serif;
             display: flex;
             justify-content: center;
@@ -77,7 +77,7 @@
 
         <div class="d-flex justify-content-between mt-4">
             <button type="submit" class="btn btn-save">Save</button>
-            <button type="reset" class="btn btn-cancel">Cancel</button>
+               <a href="items.jsp" class="btn btn-cancel">Cancel</a>  
         </div>
     </form>
 </div>
