@@ -3,6 +3,41 @@
 <%@ page import="java.text.SimpleDateFormat" %>
 
 
+<%
+    int totalCustomers = 0;
+    int totalItems = 0;
+    double totalRevenue = 0.0;
+    int totalBills = 0;
+
+    try (Connection conn = DBUtil.getConnection()) {
+        // Total Customers
+        String sqlCustomers = "SELECT COUNT(*) FROM customers";
+        PreparedStatement ps1 = conn.prepareStatement(sqlCustomers);
+        ResultSet rs1 = ps1.executeQuery();
+        if (rs1.next()) totalCustomers = rs1.getInt(1);
+
+        // Total Items
+        String sqlItems = "SELECT COUNT(*) FROM items";
+        PreparedStatement ps2 = conn.prepareStatement(sqlItems);
+        ResultSet rs2 = ps2.executeQuery();
+        if (rs2.next()) totalItems = rs2.getInt(1);
+
+        // Total Revenue (sum of bills table)
+        String sqlRevenue = "SELECT SUM(total_amount) FROM bills";
+        PreparedStatement ps3 = conn.prepareStatement(sqlRevenue);
+        ResultSet rs3 = ps3.executeQuery();
+        if (rs3.next()) totalRevenue = rs3.getDouble(1);
+
+        // Recent Bills (count bills)
+        String sqlBills = "SELECT COUNT(*) FROM bills";
+        PreparedStatement ps4 = conn.prepareStatement(sqlBills);
+        ResultSet rs4 = ps4.executeQuery();
+        if (rs4.next()) totalBills = rs4.getInt(1);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+%>
 
 
 <!DOCTYPE html>
@@ -128,9 +163,9 @@
     }
 
     .icon-blue { background-color: rgba(62, 85, 212, 0.80); }
-    .icon-pink { background-color: #c832c4; }
-    .icon-red { background-color: #dc3545; }
-    .icon-green { background-color: #28a745; }
+    .icon-pink { background-color: rgba(200, 50, 196, 0.8); }
+    .icon-red { background-color: rgba(220, 53, 69, 0.8); }
+    .icon-green { background-color: rgba(40, 167, 69, 0.8); }
 
     .card-shadow {
       background-color: white;
@@ -150,11 +185,11 @@
     }
 
     .btn-customer {
-      background-color: #3e55d4;
+      background-color: rgba(62, 85, 212, 0.80);
     }
 
     .btn-item {
-      background-color: #28a745;
+      background-color: rgba(40, 167, 69, 0.8);;
     }
 
     .btn-bill {
@@ -249,26 +284,26 @@
 
     <div class="row g-4">
       <div class="col-md-3">
-        <div class="card-box icon-blue d-flex justify-content-between align-items-center">
-          <div>Total Customers<br><span class="fs-4">750</span></div>
-          <i class="bi bi-person-fill fs-2"></i>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card-box icon-pink d-flex justify-content-between align-items-center">
-          <div>Total Items<br><span class="fs-4">1170</span></div>
-          <i class="bi bi-box fs-2"></i>
-        </div>
-      </div>
+  <div class="card-box icon-blue d-flex justify-content-between align-items-center">
+    <div>Total Customers<br><span class="fs-4"><%= totalCustomers %></span></div>
+    <i class="bi bi-person-fill fs-2"></i>
+  </div>
+</div>
+<div class="col-md-3">
+  <div class="card-box icon-pink d-flex justify-content-between align-items-center">
+    <div>Total Items<br><span class="fs-4"><%= totalItems %></span></div>
+    <i class="bi bi-box fs-2"></i>
+  </div>
+</div>
       <div class="col-md-3">
         <div class="card-box icon-red d-flex justify-content-between align-items-center">
-          <div>Total Revenue<br><span class="fs-4">1170</span></div>
+          <div>Total Revenue<br><span class="fs-4">3765</span></div>
           <i class="bi bi-currency-dollar fs-2"></i>
         </div>
       </div>
       <div class="col-md-3">
         <div class="card-box icon-green d-flex justify-content-between align-items-center">
-          <div>Recent Bills<br><span class="fs-4">17</span></div>
+          <div>Recent Bills<br><span class="fs-4">4</span></div>
           <i class="bi bi-receipt fs-2"></i>
         </div>
       </div>
@@ -340,7 +375,7 @@
     </a>
   </div>
   <div class="col-md-4">
-    <a href="generateBill.jsp" class="btn btn-bill d-block text-center">
+    <a href="billing.jsp" class="btn btn-bill d-block text-center">
       <i class="bi bi-file-earmark-plus me-2"></i>Generate Bill
     </a>
   </div>
