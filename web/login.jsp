@@ -163,26 +163,26 @@
       </div>
 
       <form action="${pageContext.request.contextPath}/login" method="post" class="form-section">
-   <%
-    String usernameValue = (String) request.getAttribute("usernameValue");
-    Boolean usernameErrorObj = (Boolean) request.getAttribute("usernameError");
-    Boolean passwordErrorObj = (Boolean) request.getAttribute("passwordError");
+        <%
+         String usernameValue = (String) request.getAttribute("usernameValue");
+         Boolean usernameErrorObj = (Boolean) request.getAttribute("usernameError");
+         Boolean passwordErrorObj = (Boolean) request.getAttribute("passwordError");
 
-    boolean usernameError = (usernameErrorObj != null) ? usernameErrorObj : false;
-    boolean passwordError = (passwordErrorObj != null) ? passwordErrorObj : false;
-%>
+         boolean usernameError = (usernameErrorObj != null) ? usernameErrorObj : false;
+         boolean passwordError = (passwordErrorObj != null) ? passwordErrorObj : false;
+         %>
 
-<div class="mb-3">
-    <label for="username" class="form-label custom-label"><b>Username</b></label>
-    <div class="input-with-icon">
-        <i class="fas fa-user"></i>
-        <input type="text"
-               class="form-control <%= usernameError ? "error-input" : "" %>"
-               id="username" name="username"
-               placeholder="Enter your username"
-               value="<%= (usernameValue != null) ? usernameValue : "" %>"
-               required>
-    </div>
+        <div class="mb-3">
+            <label for="username" class="form-label custom-label"><b>Username</b></label>
+            <div class="input-with-icon">
+                <i class="fas fa-user"></i>
+                <input type="text"
+                       class="form-control <%= usernameError ? "error-input" : "" %>"
+                       id="username" name="username"
+                       placeholder="Enter your username"
+                       value="<%= (usernameValue != null) ? usernameValue : "" %>"
+                       required>
+            </div>
     <% if (usernameError) { %>
         <div class="error-message">Username not found. Please try again.</div>
     <% } %>

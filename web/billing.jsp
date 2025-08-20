@@ -41,11 +41,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>
 
   <style>
-    /* Force billing table text to show properly */
-    #itemsTable td, #itemsTable th {
-      color: #000 !important;
-    }
-
+    #itemsTable td, #itemsTable th { color: #000 !important; }
     body { margin:0; font-family:'Segoe UI',sans-serif; background-color:rgba(62,85,212,.07); }
     .sidebar{position:fixed; top:70px; left:0; height:calc(100vh - 70px); width:240px; background:#fff; padding:20px 10px; box-shadow:0 0 10px rgba(0,0,0,.1);}
     .quick-stats-btn{background:linear-gradient(to right,#A626C6,#F74040); color:#fff; border-radius:20px; padding:15px 20px; width:100%; text-align:center; font-weight:600; margin-bottom:25px;}
@@ -78,10 +74,6 @@
       <span class="fw-bold">Welcome, Perera</span><br>
       <small class="text-muted">Admin</small>
     </div>
-    <div class="position-relative">
-      <i class="bi bi-bell-fill text-danger fs-5"></i>
-      <span class="badge bg-danger rounded-pill" style="position:absolute; top:0; right:-5px; font-size:12px;">3</span>
-    </div>
     <a href="${pageContext.request.contextPath}/logout" class="btn btn-primary btn-sm">Logout</a>
   </div>
 </div>
@@ -102,6 +94,25 @@
 
 <!-- Main -->
 <div class="main-content">
+    <%
+    String successMsg = request.getParameter("success");
+    String errorMsg = request.getParameter("error");
+%>
+
+<% if (successMsg != null) { %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <%= successMsg %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<% } %>
+
+<% if (errorMsg != null) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <%= errorMsg %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<% } %>
+
   <div class="dashboard-header d-flex justify-content-between align-items-center">
     <div>
       <h4>Create New Bill</h4>
@@ -153,14 +164,14 @@
       </div>
 
       <table id="itemsTable" class="table table-bordered mt-4">
-  <thead>
-    <tr>
-      <th>Item</th>
-      <th>Qty</th>
-      <th>Unit Price</th>
-      <th>Total</th>
-      <th>Action</th>
-    </tr>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Qty</th>
+            <th>Unit Price</th>
+            <th>Total</th>
+            <th>Action</th>
+          </tr>
         </thead>
         <tbody id="itemsBody"></tbody>
       </table>
@@ -180,14 +191,12 @@
 
 <script>
   let runningTotal = 0;
-
   const itemSelect = document.getElementById('itemSelect');
   const unitPriceInput = document.getElementById('unitPrice');
   const itemsBody = document.getElementById('itemsBody');
   const grandTotalEl = document.getElementById('grandTotal');
   const totalAmountHidden = document.getElementById('totalAmount');
 
-  // auto-fill unit price
   itemSelect.addEventListener('change', function() {
     const price = this.options[this.selectedIndex]?.getAttribute('data-price') || '';
     unitPriceInput.value = price;
@@ -205,17 +214,16 @@
 
     const rowTotal = +(qty * unitPrice).toFixed(2);
 
-    // ✅ Proper row build
     const tr = document.createElement('tr');
     tr.dataset.total = rowTotal;
     tr.innerHTML = `
       <td class="text-dark">
         ${itemName}
-        <input type="hidden" name="item_id[]" value="${itemId}">
-        <input type="hidden" name="item_name[]" value="${itemName}">
-        <input type="hidden" name="quantity[]" value="${qty}">
-        <input type="hidden" name="unit_price[]" value="${unitPrice.toFixed(2)}">
-        <input type="hidden" name="total_price[]" value="${rowTotal.toFixed(2)}">
+        <input type="hidden" name="item_id" value="${itemId}">
+        <input type="hidden" name="item_name" value="${itemName}">
+        <input type="hidden" name="quantity" value="${qty}">
+        <input type="hidden" name="unit_price" value="${unitPrice.toFixed(2)}">
+        <input type="hidden" name="total_price" value="${rowTotal.toFixed(2)}">
       </td>
       <td class="text-dark">${qty}</td>
       <td class="text-dark">${unitPrice.toFixed(2)}</td>
@@ -224,7 +232,6 @@
     `;
     itemsBody.appendChild(tr);
 
-    // Remove button handler
     tr.querySelector('.remove-btn').addEventListener('click', function () {
       const rTotal = parseFloat(tr.dataset.total || tr.querySelector('.row-total').textContent) || 0;
       tr.remove();
@@ -234,20 +241,17 @@
       totalAmountHidden.value = runningTotal.toFixed(2);
     });
 
-    // update totals
     runningTotal += rowTotal;
     grandTotalEl.textContent = runningTotal.toFixed(2);
     totalAmountHidden.value = runningTotal.toFixed(2);
 
-    // reset inputs
     document.getElementById('quantity').value = 1;
     itemSelect.value = '';
     unitPriceInput.value = '';
   });
 
-  // prevent submit without items
   document.getElementById('billForm').addEventListener('submit', function(e){
-    if (!itemsBody.querySelector('input[name="item_id[]"]')) {
+    if (!itemsBody.querySelector('input[name="item_id"]')) {
       e.preventDefault();
       alert('Please add at least one item to the bill.');
     }

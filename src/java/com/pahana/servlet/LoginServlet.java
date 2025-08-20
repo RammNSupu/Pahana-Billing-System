@@ -27,7 +27,7 @@ public class LoginServlet extends HttpServlet {
 
         try (Connection conn = DBUtil.getConnection()) {
 
-            // 1. Check if username exists
+            //  Check if username exists
             String checkUser = "SELECT password FROM users WHERE username = ?";
             PreparedStatement stmtUser = conn.prepareStatement(checkUser);
             stmtUser.setString(1, username);
@@ -37,19 +37,19 @@ public class LoginServlet extends HttpServlet {
                 // username not found
                 usernameError = true;
             } else {
-                // username exists, now check password
+                //  check password
                 String correctPassword = rsUser.getString("password");
                 if (!correctPassword.equals(password)) {
                     passwordError = true;
                 }
             }
-
+            
             if (!usernameError && !passwordError) {
                 // Login success
                 RequestDispatcher dispatcher = request.getRequestDispatcher("dashboard.jsp");
                 dispatcher.forward(request, response);
             } else {
-                // Pass error flags back to JSP
+           
                 request.setAttribute("usernameError", usernameError);
                 request.setAttribute("passwordError", passwordError);
                 request.setAttribute("usernameValue", username);
